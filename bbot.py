@@ -106,13 +106,13 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     keyboard = [
-        [InlineKeyboardButton("🔹 Прямі та площини", callback_data="t1")],
-        [InlineKeyboardButton("🔹 Паралельність", callback_data="t2")],
-        [InlineKeyboardButton("🔹 Перпендикулярність", callback_data="t3")],
-        [InlineKeyboardButton("🔹 Кути", callback_data="t4")],
-        [InlineKeyboardButton("🔹 Многокутники", callback_data="t5")],
-        [InlineKeyboardButton("🔹 Означення та аксіоми", callback_data="t6")],
-        [InlineKeyboardButton("🔹 Побудови", callback_data="t7")],
+        [InlineKeyboardButton("🔹 Взаємне розміщення прямих у просторі", callback_data="t1")],
+        [InlineKeyboardButton("🔹 Взаємне розміщення прямої і площини", callback_data="t2")],
+        [InlineKeyboardButton("🔹 Формули і геометричні умови", callback_data="t3")],
+        [InlineKeyboardButton("🔹 Взаємне розміщення площин у просторі", callback_data="t4")],
+        [InlineKeyboardButton("🔹 Паралельність прямих в площин у просторі", callback_data="t5")],
+        [InlineKeyboardButton("🔹 Паралельність двох площин", callback_data="t6")],
+        [InlineKeyboardButton("🔹 Властивості паралельних прямих у просторі", callback_data="t7")],
         [InlineKeyboardButton("🧪 Почати тест", callback_data="quiz")]
     ]
 
