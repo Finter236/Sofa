@@ -104,10 +104,33 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    keyboard = [[InlineKeyboardButton(topic_ids[tid], callback_data=tid)] for tid in topic_ids]
-    keyboard.append([InlineKeyboardButton("✅ Все вивчив!", callback_data="quiz")])
-    await query.edit_message_text("Оберіть тему для вивчення:", reply_markup=InlineKeyboardMarkup(keyboard))
+
+    keyboard = [
+        [InlineKeyboardButton("🔹 Прямі та площини", callback_data="t1")],
+        [InlineKeyboardButton("🔹 Паралельність", callback_data="t2")],
+        [InlineKeyboardButton("🔹 Перпендикулярність", callback_data="t3")],
+        [InlineKeyboardButton("🔹 Кути", callback_data="t4")],
+        [InlineKeyboardButton("🔹 Многокутники", callback_data="t5")],
+        [InlineKeyboardButton("🔹 Означення та аксіоми", callback_data="t6")],
+        [InlineKeyboardButton("🔹 Побудови", callback_data="t7")],
+        [InlineKeyboardButton("🧪 Почати тест", callback_data="quiz")]
+    ]
+
+    markup = InlineKeyboardMarkup(keyboard)
+
+    try:
+        # Тільки якщо є текст, можна редагувати
+        if query.message and query.message.text:
+            await query.edit_message_text("Оберіть тему для вивчення:", reply_markup=markup)
+        else:
+            # Якщо тексту немає — відправити нове повідомлення
+            await query.message.reply_text("Оберіть тему для вивчення:", reply_markup=markup)
+    except Exception as e:
+        print(f"Помилка при редагуванні повідомлення: {e}")
+        await query.message.reply_text("Оберіть тему для вивчення:", reply_markup=markup)
+
     return MENU
+
 
 async def show_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
