@@ -112,13 +112,21 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def show_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     topic_key = query.data
-    name, img_filename, description = topics[topic_key]
-    text = f"<b>{name}</b>\n\n{description}"
+    topic_data = topics[topic_key]
 
-    with open(f"images/{img_filename}", "rb") as photo:
-        await query.message.reply_photo(photo=photo, caption=text, parse_mode="HTML")
+    # Якщо дані — це просто текст (старі теми)
+    if isinstance(topic_data, str):
+        text = f"<b>{topic_ids[topic_key]}</b>\n\n{topic_data}"
+        await query.message.reply_text(text, parse_mode="HTML")
+    else:
+        # Якщо дані — кортеж (нові теми з зображенням)
+        name, img_filename, description = topic_data
+        text = f"<b>{name}</b>\n\n{description}"
+        with open(f"images/{img_filename}", "rb") as photo:
+            await query.message.reply_photo(photo=photo, caption=text, parse_mode="HTML")
 
     return TOPIC
+
 
 async def start_quiz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
