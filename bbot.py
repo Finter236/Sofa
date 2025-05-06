@@ -126,6 +126,15 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text("Оберіть тему для вивчення:", reply_markup=InlineKeyboardMarkup(keyboard))
     return MENU
 
+
+async def learn_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    await query.edit_message_text("Ви обрали режим навчання.")
+    # Тут додай логіку показу теми, матеріалу і т.д.
+    return LEARNING
+
+
 async def show_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     topic_key = query.data
