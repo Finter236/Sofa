@@ -5,6 +5,9 @@ from telegram.ext import (
     Application, CallbackQueryHandler, CommandHandler,
     ConversationHandler, ContextTypes, MessageHandler, filters
 )
+from telegram.ext import ConversationHandler
+
+CHOOSING_TOPIC, LEARNING, TESTING = range(3)
 
 # Логування
 logging.basicConfig(level=logging.INFO)
