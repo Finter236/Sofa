@@ -165,7 +165,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Запуск бота
 if __name__ == '__main__':
-    app = Application.builder().token("YOUR_BOT_TOKEN_HERE").build()
+    app = Application.builder().token("8125962066:AAHi-aHXVfddpUyfxmsbVpVhjO_XEUH6tCE").build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
