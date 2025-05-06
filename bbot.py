@@ -25,7 +25,8 @@ topic_ids = {
 }
 
 topics = {
-    "t1": """<b>1. Перетинаються</b>
+     "t1": """<b>1. Перетинаються</b>
+    
 - Мають одну спільну точку.
 - Лежать в одній площині.
 - Кут між прямими — це кут між напрямними векторами.
@@ -58,23 +59,28 @@ topics = {
 - Вектор прямої паралельний площині.""",
     "t3": """- Перевірка скрещування: векторне та змішане добутки.
 - Перетин прямої і площини: <i>A + tv</i> та нормаль площини <i>n</i>.""",
-    "t4": """- <b>Перетинаються</b>: мають спільну пряму.
+
+     "t4": ("Перпендикуляр", "image4.jpg", """- <b>Перетинаються</b>: мають спільну пряму.
 - <b>Паралельні</b>: не мають спільних точок або збігаються.
 
 <b>Властивості:</b>
 1. Перетин третьою площиною — дає паралельні прямі.
-2. Відрізки між площинами рівні.""",
-    "t5": """- Не мають спільних точок.
+2. Відрізки між площинами рівні."""),
+
+    "t5": ("Кут між прямими", "image5.jpg", """- Не мають спільних точок.
 - Колінеарні вектори.
 - Лежать в одній площині.
 - Вектор не перпендикулярний площині.
-- Має одну точку перетину.""",
-    "t6": """- Ознака: прямі з площини A паралельні прямим у площині B.
+- Має одну точку перетину."""),
+
+    "t6": ("Кут між площинами", "image6.jpg", """- Ознака: прямі з площини A паралельні прямим у площині B.
+
 <b>Властивості:</b>
 1. Прямі перетину з третьою площиною — паралельні.
-2. Відрізки між площинами рівні.""",
-    "t7": """- Прямі з паралельних площин, перетнутих третьою — паралельні.
-- Якщо обидві прямі паралельні третій — вони паралельні між собою."""
+2. Відрізки між площинами рівні."""),
+
+    "t7": ("Кут між прямою і площиною", "image7.jpg", """- Прямі з паралельних площин, перетнутих третьою — паралельні.
+- Якщо обидві прямі паралельні третій — вони паралельні між собою.""")
 }
 
 quiz_questions = {
@@ -87,7 +93,6 @@ quiz_questions = {
     "t7": ("Коли дві прямі паралельні між собою?", "обидві паралельні третій прямій")
 }
 
-# Команди
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("▶️ Почати навчання", callback_data="start_learning")]]
     await update.message.reply_text(
@@ -106,24 +111,12 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def show_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    tid = query.data
-    context.user_data['current_topic'] = tid
-    await query.answer()
+    topic_key = query.data
+    name, img_filename, description = topics[topic_key]
+    text = f"<b>{name}</b>\n\n{description}"
 
-    keyboard = [[InlineKeyboardButton("🔙 Назад до тем", callback_data="start_learning")]]
-    image_path = f"images/{tid}.png"
-
-    if tid in {"t4", "t5", "t6", "t7"} and os.path.exists(image_path):
-        await query.message.delete()
-        await context.bot.send_photo(
-            chat_id=query.message.chat_id,
-            photo=open(image_path, "rb"),
-            caption=topics[tid],
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
-    else:
-        await query.edit_message_text(topics[tid], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+    with open(f"images/{img_filename}", "rb") as photo:
+        await query.message.reply_photo(photo=photo, caption=text, parse_mode="HTML")
 
     return TOPIC
 
@@ -138,19 +131,31 @@ async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         tid, (question, answer) = next(context.user_data['quiz'])
         context.user_data['current_q'] = (tid, answer)
+
+        text = f"🧠 {question}\n\n(Напишіть відповідь у повідомленні)"
         if update.callback_query:
-            await update.callback_query.edit_message_text(f"🧠 {question}\n\n(Напишіть відповідь у повідомленні)")
+            await update.callback_query.edit_message_text(text)
         else:
-            await update.message.reply_text(f"🧠 {question}\n\n(Напишіть відповідь у повідомленні)")
+            await update.message.reply_text(text)
+
         return QUIZ
+
     except StopIteration:
-        wrong = context.user_data['wrong']
+        wrong = context.user_data.get('wrong', [])
         if wrong:
             wrong_list = "\n".join(f"🔹 {topic_ids[tid]}" for tid in wrong)
-            await update.callback_query.edit_message_text(f"Переглянь ці теми ще раз:\n{wrong_list}")
+            text = f"Переглянь ці теми ще раз:\n{wrong_list}"
         else:
-            await update.callback_query.edit_message_text("🎉 Вітаю! Усі відповіді правильні.")
+            text = "🎉 Вітаю! Усі відповіді правильні."
+
+        # Проверка: откуда пришел апдейт — сообщение или колбэк
+        if update.callback_query:
+            await update.callback_query.edit_message_text(text)
+        else:
+            await update.message.reply_text(text)
+
         return ConversationHandler.END
+
 
 async def handle_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_answer = update.message.text.strip().lower()
@@ -163,7 +168,6 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Навчання завершено. Щасти!")
     return ConversationHandler.END
 
-# Запуск бота
 if __name__ == '__main__':
     app = Application.builder().token("8125962066:AAHi-aHXVfddpUyfxmsbVpVhjO_XEUH6tCE").build()
 
@@ -185,6 +189,6 @@ if __name__ == '__main__':
     )
 
     app.add_handler(conv_handler)
-    logger.info("Бот запущен")
+    logger.info("Бот запущено")
     app.run_polling()
 
