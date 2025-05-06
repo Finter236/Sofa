@@ -141,6 +141,14 @@ async def show_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     return TOPIC
 
+async def choose_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    # показуємо тему
+    await query.edit_message_text("Вибрана тема: ...", reply_markup=...)
+    return LEARNING  # ОБОВ’ЯЗКОВО повернути наступний state
+
+
 
 async def start_quiz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -196,23 +204,20 @@ if __name__ == '__main__':
     conv_handler = ConversationHandler(
     entry_points=[CommandHandler("start", start)],
     states={
-        MENU: [
-            CallbackQueryHandler(menu, pattern="^start_learning$"),
-            CallbackQueryHandler(show_topic, pattern="^t[1-7]$"),
-            CallbackQueryHandler(start_quiz, pattern="^quiz$")
+        CHOOSING_TOPIC: [
+            CallbackQueryHandler(choose_topic),
         ],
-        TOPIC: [
-            CallbackQueryHandler(menu, pattern="^start_learning$"),
-            # можна додати більше callbackів, якщо потрібно
+        LEARNING: [
+            CallbackQueryHandler(learn_handler, pattern="^learn_"),
         ],
-        QUIZ: [
-            CommandHandler("cancel", cancel),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, handle_answer)
+        TESTING: [
+            CallbackQueryHandler(test_handler, pattern="^test_"),
         ],
     },
-    fallbacks=[CommandHandler("cancel", cancel)],
-    per_chat=True  # ✅ важлива опція
+    fallbacks=[CommandHandler("start", start)],
+    per_message=True
 )
+
 
 
     app.add_handler(conv_handler)
