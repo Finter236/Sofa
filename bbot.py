@@ -211,7 +211,7 @@ if __name__ == '__main__':
         ],
     },
     fallbacks=[CommandHandler("cancel", cancel)],
-    per_message=True  # ✅ важлива опція
+    per_chat=True  # ✅ важлива опція
 )
 
 
