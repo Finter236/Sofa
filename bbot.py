@@ -180,21 +180,26 @@ if __name__ == '__main__':
     app = Application.builder().token("8125962066:AAHi-aHXVfddpUyfxmsbVpVhjO_XEUH6tCE").build()
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            MENU: [
-                CallbackQueryHandler(menu, pattern="^start_learning$"),
-                CallbackQueryHandler(show_topic, pattern="^t[1-7]$"),
-                CallbackQueryHandler(start_quiz, pattern="^quiz$")
-            ],
-            TOPIC: [CallbackQueryHandler(menu, pattern="^start_learning$")],
-            QUIZ: [
-                CommandHandler("cancel", cancel),
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_answer)
-            ],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    )
+    entry_points=[CommandHandler("start", start)],
+    states={
+        MENU: [
+            CallbackQueryHandler(menu, pattern="^start_learning$"),
+            CallbackQueryHandler(show_topic, pattern="^t[1-7]$"),
+            CallbackQueryHandler(start_quiz, pattern="^quiz$")
+        ],
+        TOPIC: [
+            CallbackQueryHandler(menu, pattern="^start_learning$"),
+            # можна додати більше callbackів, якщо потрібно
+        ],
+        QUIZ: [
+            CommandHandler("cancel", cancel),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, handle_answer)
+        ],
+    },
+    fallbacks=[CommandHandler("cancel", cancel)],
+    per_message=True  # ✅ важлива опція
+)
+
 
     app.add_handler(conv_handler)
     logger.info("Бот запущено")
