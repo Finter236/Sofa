@@ -5,6 +5,9 @@ from telegram.ext import (
     ConversationHandler, ContextTypes, MessageHandler, filters
 )
 
+from keep_alive import keep_alive  # Запускаем веб-сервер
+keep_alive()
+
 # Логування
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
