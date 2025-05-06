@@ -121,13 +121,21 @@ async def show_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     name, img_filename, description = topics[topic_key]
     text = f"<b>{name}</b>\n\n{description}"
 
+    keyboard = [[InlineKeyboardButton("◀️ Повернутись до тем", callback_data="start_learning")]]
+
     if img_filename:
         with open(f"images/{img_filename}", "rb") as photo:
-            await query.message.reply_photo(photo=photo, caption=text, parse_mode="HTML")
+            await query.message.reply_photo(
+                photo=photo,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
     else:
-        await query.message.reply_text(text, parse_mode="HTML")
+        await query.message.reply_text(text, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
 
     return TOPIC
+
 
 async def start_quiz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -181,19 +189,21 @@ if __name__ == '__main__':
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
-            MENU: [
-                CallbackQueryHandler(menu, pattern="^start_learning$"),
-                CallbackQueryHandler(show_topic, pattern="^t[1-7]$"),
-                CallbackQueryHandler(start_quiz, pattern="^quiz$")
-            ],
-            TOPIC: [CallbackQueryHandler(menu, pattern="^start_learning$")],
-            QUIZ: [
-                CommandHandler("cancel", cancel),
-                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_answer)
-            ],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    )
+            states={
+    MENU: [
+        CallbackQueryHandler(menu, pattern="^start_learning$"),
+        CallbackQueryHandler(show_topic, pattern="^t[1-7]$"),
+        CallbackQueryHandler(start_quiz, pattern="^quiz$")
+    ],
+    TOPIC: [
+        CallbackQueryHandler(menu, pattern="^start_learning$")  # <== добавлено сюда
+    ],
+    QUIZ: [
+        CommandHandler("cancel", cancel),
+        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_answer)
+    ],
+},
+
 
     app.add_handler(conv_handler)
     logger.info("Бот запущено")
