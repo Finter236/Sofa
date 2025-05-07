@@ -243,27 +243,50 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Навчання завершено. Щасти!")
     return ConversationHandler.END
 
+
+from flask import Flask
+from threading import Thread
+
+# Мини-сервер Flask для "обмана" Railway
+ping_app = Flask(__name__)
+
+@ping_app.route('/')
+def ping():
+    return "✅ Бот працює", 200
+
+def run_ping_server():
+    ping_app.run(host="0.0.0.0", port=8000)
+
+
 if __name__ == '__main__':
+    # Запускаем мини-сервер для HTTP-ответа Railway
+    Thread(target=run_ping_server).start()
+
     app = Application.builder().token("8125962066:AAHi-aHXVfddpUyfxmsbVpVhjO_XEUH6tCE").build()
 
     conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("start", start)],
-    states={
-        MENU: [
-            CallbackQueryHandler(menu, pattern="^start_learning$"),
-            CallbackQueryHandler(show_topic, pattern="^t[1-7]$"),
-            CallbackQueryHandler(start_quiz, pattern="^quiz$")
-        ],
-        TOPIC: [
-            CallbackQueryHandler(menu, pattern="^start_learning$")
-        ],
-        QUIZ: [
-            CommandHandler("cancel", cancel),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, handle_answer)
-        ],
-    },
-    fallbacks=[CommandHandler("cancel", cancel)],
-)
+        entry_points=[CommandHandler("start", start)],
+        states={
+            MENU: [
+                CallbackQueryHandler(menu, pattern="^start_learning$"),
+                CallbackQueryHandler(show_topic, pattern="^t[1-7]$"),
+                CallbackQueryHandler(start_quiz, pattern="^quiz$")
+            ],
+            TOPIC: [
+                CallbackQueryHandler(menu, pattern="^start_learning$")
+            ],
+            QUIZ: [
+                CommandHandler("cancel", cancel),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_answer)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
+
+    app.add_handler(conv_handler)
+    logger.info("Бот запущено")
+    app.run_polling()
+
 
 
     app.add_handler(conv_handler)
