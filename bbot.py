@@ -11,6 +11,25 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+ADMIN_ID = 6599429532  # твой Telegram ID
+
+from datetime import datetime
+import json
+
+def log_user_to_file(user):
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "user_id": user.id
+    }
+    with open("user_logs.txt", "a", encoding="utf-8") as f:
+        f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+
+
+
 # Стан бота
 MENU, TOPIC, QUIZ = range(3)
 
@@ -96,12 +115,27 @@ quiz_questions = {
 }
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    log_user_to_file(user)
+
+    # Отправка админу
+    try:
+        text = f"👤 Новий користувач:\n" \
+               f"• Ім'я: {user.first_name} {user.last_name or ''}\n" \
+               f"• Username: @{user.username or 'немає'}\n" \
+               f"• ID: {user.id}"
+        await context.bot.send_message(chat_id=ADMIN_ID, text=text)
+    except Exception as e:
+        logger.warning(f"Не вдалося надіслати повідомлення адміну: {e}")
+
+    # Основное меню
     keyboard = [[InlineKeyboardButton("▶️ Почати навчання", callback_data="start_learning")]]
     await update.message.reply_text(
         "Привіт! Я бот для вивчення геометрії. Натисни кнопку ⬇️",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
     return MENU
+
 
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -197,19 +231,6 @@ async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(text)
 
         return ConversationHandler.END
-
-
-def log_user_to_file(user):
-    log_entry = {
-        "timestamp": datetime.now().isoformat(),
-        "username": user.username,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "user_id": user.id
-    }
-    with open("user_logs.txt", "a", encoding="utf-8") as f:
-        f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
-
 
 async def handle_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_answer = update.message.text.strip().lower()
