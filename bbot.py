@@ -232,7 +232,6 @@ if __name__ == '__main__':
 )
 
 
-    app.add_handler(CommandHandler("start", start))  # Явно добавляем /start
     app.add_handler(conv_handler)
     logger.info("Бот запущено")
     app.run_polling()
