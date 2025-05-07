@@ -94,12 +94,25 @@ quiz_questions = {
 }
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data.clear()  # Очистка пользовательских данных
+
     keyboard = [[InlineKeyboardButton("▶️ Почати навчання", callback_data="start_learning")]]
-    await update.message.reply_text(
-        "Привіт! Я бот для вивчення геометрії. Натисни кнопку ⬇️",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
+
+    # Если это CallbackQuery — нужно удалить клавиатуру или просто ответить
+    if update.callback_query:
+        await update.callback_query.answer()
+        await update.callback_query.edit_message_text(
+            "Привіт! Я бот для вивчення геометрії. Натисни кнопку ⬇️",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    else:
+        await update.message.reply_text(
+            "Привіт! Я бот для вивчення геометрії. Натисни кнопку ⬇️",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
     return MENU
+
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
