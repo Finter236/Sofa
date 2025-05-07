@@ -1,9 +1,11 @@
+import json
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application, CallbackQueryHandler, CommandHandler,
     ConversationHandler, ContextTypes, MessageHandler, filters
 )
+from datetime import datetime
 
 # Логування
 logging.basicConfig(level=logging.INFO)
@@ -195,6 +197,19 @@ async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(text)
 
         return ConversationHandler.END
+
+
+def log_user_to_file(user):
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "user_id": user.id
+    }
+    with open("user_logs.txt", "a", encoding="utf-8") as f:
+        f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+
 
 async def handle_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_answer = update.message.text.strip().lower()
